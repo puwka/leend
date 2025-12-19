@@ -54,6 +54,9 @@ interface SiteSettings {
     url: string;
     enabled: boolean;
   };
+  form: {
+    enabled: boolean;
+  };
   blocks: {
     hero: boolean;
     services: boolean;
@@ -155,6 +158,10 @@ export default function AdminPage() {
         // Убеждаемся, что logo поле присутствует
         if (!data.logo) {
           data.logo = { url: "", enabled: true };
+        }
+        // Убеждаемся, что form поле присутствует
+        if (!data.form) {
+          data.form = { enabled: true };
         }
         setSettings(data);
       }
@@ -1300,6 +1307,33 @@ export default function AdminPage() {
                     Показывать логотип
                   </label>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Contact Form Section */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-[oklch(0.75_0.18_50)]" />
+                  Форма заявки
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="form-enabled"
+                    checked={settings.form?.enabled ?? true}
+                    onChange={(e) => updateSettings("form", "enabled", e.target.checked)}
+                    className="w-4 h-4 rounded border-border"
+                  />
+                  <label htmlFor="form-enabled" className="text-sm font-medium cursor-pointer">
+                    Показывать форму заявки в разделе контактов
+                  </label>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Когда форма выключена, в разделе контактов будут отображаться только контактная информация и социальные сети.
+                </p>
               </CardContent>
             </Card>
 

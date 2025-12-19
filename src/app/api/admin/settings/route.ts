@@ -30,6 +30,9 @@ interface SiteSettings {
     url: string;
     enabled: boolean;
   };
+  form: {
+    enabled: boolean;
+  };
   blocks: {
     hero: boolean;
     services: boolean;
@@ -80,6 +83,9 @@ export async function GET() {
         },
         logo: {
           url: "",
+          enabled: true,
+        },
+        form: {
           enabled: true,
         },
         blocks: {

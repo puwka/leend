@@ -123,7 +123,7 @@ export default function Contacts() {
           </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
+        <div className={`grid grid-cols-1 ${settings.form?.enabled !== false ? 'lg:grid-cols-2' : 'lg:grid-cols-1 max-w-2xl mx-auto'} gap-12 lg:gap-20`}>
           {/* Contact Info */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -193,16 +193,17 @@ export default function Contacts() {
           </motion.div>
 
           {/* Contact Form */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <form
-              onSubmit={handleSubmit}
-              className="p-8 md:p-10 rounded-3xl bg-card border border-border"
+          {settings.form?.enabled !== false && (
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
             >
+              <form
+                onSubmit={handleSubmit}
+                className="p-8 md:p-10 rounded-3xl bg-card border border-border"
+              >
               <h3 className="font-[var(--font-oswald)] text-2xl font-bold uppercase mb-2">
                 Оставить заявку
               </h3>
@@ -321,6 +322,7 @@ export default function Contacts() {
               </div>
             </form>
           </motion.div>
+          )}
         </div>
       </div>
     </section>

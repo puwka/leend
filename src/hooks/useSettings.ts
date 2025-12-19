@@ -31,6 +31,9 @@ export interface SiteSettings {
     url: string;
     enabled: boolean;
   };
+  form: {
+    enabled: boolean;
+  };
   blocks: {
     hero: boolean;
     services: boolean;
@@ -69,6 +72,9 @@ const defaultSettings: SiteSettings = {
   },
   logo: {
     url: "",
+    enabled: true,
+  },
+  form: {
     enabled: true,
   },
   blocks: {
