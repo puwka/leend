@@ -109,8 +109,11 @@ export default function Header() {
   // Format phone for tel: link
   const phoneLink = settings.contacts.phone.replace(/[^+\d]/g, "");
 
-  // Logo based on theme
-  const logoSrc = theme === "dark" ? "/logo_white.png" : "/logo_black.png";
+  // Logo based on settings or theme fallback
+  const showLogo = settings.logo?.enabled !== false; // По умолчанию показываем
+  const logoSrc = settings.logo?.url
+    ? settings.logo.url
+    : theme === "dark" ? "/logo_white.png" : "/logo_black.png";
 
   return (
     <>
@@ -140,13 +143,15 @@ export default function Header() {
                 whileTap={{ scale: 0.98 }}
                 className="flex items-center gap-3"
               >
-                <Image
-                  src={logoSrc}
-                  alt="Тяжёлый Профиль"
-                  width={64}
-                  height={64}
-                  className="w-14 h-14 md:w-16 md:h-16 object-contain"
-                />
+                {showLogo && (
+                  <Image
+                    src={logoSrc}
+                    alt="Тяжёлый Профиль"
+                    width={64}
+                    height={64}
+                    className="w-14 h-14 md:w-16 md:h-16 object-contain"
+                  />
+                )}
                 <div className="hidden sm:block">
                   <span className="font-[var(--font-oswald)] text-lg md:text-xl font-bold uppercase tracking-wider">
                     Тяжёлый

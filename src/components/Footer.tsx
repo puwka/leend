@@ -26,8 +26,11 @@ export default function Footer() {
   // Format phone for tel: link
   const phoneLink = settings.contacts.phone.replace(/[^+\d]/g, "");
 
-  // Logo based on theme
-  const logoSrc = theme === "dark" ? "/logo_white.png" : "/logo_black.png";
+  // Logo based on settings or theme fallback
+  const showLogo = settings.logo?.enabled !== false; // По умолчанию показываем
+  const logoSrc = settings.logo?.url
+    ? settings.logo.url
+    : theme === "dark" ? "/logo_white.png" : "/logo_black.png";
 
   const socialLinks = [
     ...(settings.social.telegram ? [{
@@ -61,13 +64,15 @@ export default function Footer() {
           {/* Brand */}
           <div className="lg:col-span-2">
             <a href="#" className="inline-flex items-center gap-3 mb-6">
-              <Image
-                src={logoSrc}
-                alt="Тяжёлый Профиль"
-                width={48}
-                height={48}
-                className="w-12 h-12 object-contain"
-              />
+              {showLogo && (
+                <Image
+                  src={logoSrc}
+                  alt="Тяжёлый Профиль"
+                  width={48}
+                  height={48}
+                  className="w-12 h-12 object-contain"
+                />
+              )}
               <span className="font-[var(--font-oswald)] text-2xl font-bold uppercase tracking-wider">
                 Тяжёлый
                 <span className="text-[oklch(0.75_0.18_50)]"> Профиль</span>

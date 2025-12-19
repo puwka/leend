@@ -26,6 +26,10 @@ interface SiteSettings {
     title: string;
     description: string;
   };
+  logo: {
+    url: string;
+    enabled: boolean;
+  };
   blocks: {
     hero: boolean;
     services: boolean;
@@ -74,6 +78,10 @@ export async function GET() {
           title: "",
           description: "",
         },
+        logo: {
+          url: "",
+          enabled: true,
+        },
         blocks: {
           hero: true,
           services: true,
@@ -83,7 +91,7 @@ export async function GET() {
           faq: true,
           contacts: true,
         },
-      });
+      } as SiteSettings);
     }
 
     return NextResponse.json(data?.data || {});

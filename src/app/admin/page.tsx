@@ -50,6 +50,10 @@ interface SiteSettings {
     title: string;
     description: string;
   };
+  logo: {
+    url: string;
+    enabled: boolean;
+  };
   blocks: {
     hero: boolean;
     services: boolean;
@@ -86,6 +90,9 @@ export default function AdminPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [logoUploadError, setLogoUploadError] = useState<string | null>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   // Settings state
   const [settings, setSettings] = useState<SiteSettings | null>(null);
@@ -145,6 +152,10 @@ export default function AdminPage() {
       const response = await fetch("/api/admin/settings");
       if (response.ok) {
         const data = await response.json();
+        // Убеждаемся, что logo поле присутствует
+        if (!data.logo) {
+          data.logo = { url: "", enabled: true };
+        }
         setSettings(data);
       }
     } catch (error) {
@@ -264,6 +275,82 @@ export default function AdminPage() {
       duration: "",
       workers: 0,
     });
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setLogoUploadError(null);
+
+    // Проверка типа файла
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"];
+    if (!allowedTypes.includes(file.type)) {
+      const errorMsg = `Неподдерживаемый тип файла: ${file.type}. Разрешены только JPEG, PNG, WebP, GIF и SVG.`;
+      setLogoUploadError(errorMsg);
+      console.error(errorMsg);
+      if (logoInputRef.current) {
+        logoInputRef.current.value = "";
+      }
+      return;
+    }
+
+    // Проверка размера файла (макс 5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      const errorMsg = `Файл слишком большой: ${(file.size / 1024 / 1024).toFixed(2)}MB. Максимальный размер: 5MB.`;
+      setLogoUploadError(errorMsg);
+      console.error(errorMsg);
+      if (logoInputRef.current) {
+        logoInputRef.current.value = "";
+      }
+      return;
+    }
+
+    setUploadingLogo(true);
+    setLogoUploadError(null);
+    
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append("file", file);
+
+      console.log("Загрузка логотипа:", file.name, "Тип:", file.type, "Размер:", file.size);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formDataUpload,
+      });
+
+      console.log("Ответ сервера:", response.status, response.statusText);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Логотип загружен успешно:", data.url);
+        updateSettings("logo", "url", data.url);
+        setLogoUploadError(null);
+      } else {
+        let errorMessage = "Ошибка загрузки логотипа";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+          console.error("Ошибка сервера:", errorData);
+        } catch (parseError) {
+          const text = await response.text();
+          console.error("Ошибка парсинга ответа:", text);
+          errorMessage = `Ошибка ${response.status}: ${response.statusText}`;
+        }
+        setLogoUploadError(errorMessage);
+      }
+    } catch (error) {
+      const errorMessage = `Ошибка загрузки логотипа: ${error instanceof Error ? error.message : "Неизвестная ошибка"}`;
+      console.error(errorMessage, error);
+      setLogoUploadError(errorMessage);
+    } finally {
+      setUploadingLogo(false);
+      if (logoInputRef.current) {
+        logoInputRef.current.value = "";
+      }
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -407,7 +494,7 @@ export default function AdminPage() {
     }
   };
 
-  const updateSettings = (section: keyof SiteSettings, field: string, value: string) => {
+  const updateSettings = (section: keyof SiteSettings, field: string, value: string | boolean) => {
     if (!settings) return;
     setSettings({
       ...settings,
@@ -1132,6 +1219,86 @@ export default function AdminPage() {
                     rows={2}
                     className="bg-background border-border"
                   />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Logo Section */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5 text-[oklch(0.75_0.18_50)]" />
+                  Логотип
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    URL логотипа
+                  </label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={settings.logo?.url || ""}
+                      onChange={(e) => updateSettings("logo", "url", e.target.value)}
+                      placeholder="URL или загрузите файл"
+                      className="bg-background border-border flex-1"
+                    />
+                    <input
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => logoInputRef.current?.click()}
+                      disabled={uploadingLogo}
+                    >
+                      {uploadingLogo ? (
+                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Upload className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </div>
+                  {logoUploadError && (
+                    <div className="text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg p-2 mt-2">
+                      {logoUploadError}
+                    </div>
+                  )}
+                  {settings.logo?.url && (
+                    <div className="relative w-32 h-24 rounded-lg overflow-hidden bg-secondary mt-2">
+                      <Image
+                        src={settings.logo.url}
+                        alt="Logo Preview"
+                        fill
+                        className="object-contain"
+                      />
+                      <button
+                        onClick={() => {
+                          updateSettings("logo", "url", "");
+                          setLogoUploadError(null);
+                        }}
+                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/50 flex items-center justify-center hover:bg-black/70"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="logo-enabled"
+                    checked={settings.logo?.enabled ?? true}
+                    onChange={(e) => updateSettings("logo", "enabled", e.target.checked)}
+                    className="w-4 h-4 rounded border-border"
+                  />
+                  <label htmlFor="logo-enabled" className="text-sm font-medium cursor-pointer">
+                    Показывать логотип
+                  </label>
                 </div>
               </CardContent>
             </Card>

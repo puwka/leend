@@ -27,6 +27,10 @@ export interface SiteSettings {
     title: string;
     description: string;
   };
+  logo: {
+    url: string;
+    enabled: boolean;
+  };
   blocks: {
     hero: boolean;
     services: boolean;
@@ -62,6 +66,10 @@ const defaultSettings: SiteSettings = {
   meta: {
     title: "Тяжёлый Профиль — Аутсорсинг рабочего персонала",
     description: "Профессиональный аутсорсинг рабочего персонала",
+  },
+  logo: {
+    url: "",
+    enabled: true,
   },
   blocks: {
     hero: true,
