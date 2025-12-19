@@ -1,0 +1,37 @@
+{
+  "items": [
+    {
+      "id": "1",
+      "title": "ЖК «Северный»",
+      "description": "Общестроительные работы, 50 человек на объект",
+      "image": "/uploads/1765980765491-2svo0b.jpg",
+      "category": "Строительство",
+      "client": "СтройГрупп",
+      "duration": "6 месяцев",
+      "workers": 620,
+      "createdAt": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "2",
+      "title": "Логистический центр OZON",
+      "description": "Складские работы, круглосуточная смена",
+      "image": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800",
+      "category": "Склад",
+      "client": "OZON",
+      "duration": "Постоянно",
+      "workers": 30,
+      "createdAt": "2024-02-20T14:30:00Z"
+    },
+    {
+      "id": "3",
+      "title": "Завод «Металлопрофиль»",
+      "description": "Монтаж производственных линий",
+      "image": "https://images.unsplash.com/photo-1565939974179-b2b2c0df0e88?w=800",
+      "category": "Промышленность",
+      "client": "Металлопрофиль",
+      "duration": "3 месяца",
+      "workers": 25,
+      "createdAt": "2024-03-10T09:15:00Z"
+    }
+  ]
+}
