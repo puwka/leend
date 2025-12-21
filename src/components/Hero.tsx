@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Users, Clock, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSettings } from "@/hooks/useSettings";
+import { useTheme } from "@/components/ThemeProvider";
 
 const stats = [
   { icon: Users, value: "1000+", label: "Сотрудников в резерве" },
@@ -13,6 +14,7 @@ const stats = [
 
 export default function Hero() {
   const { settings } = useSettings();
+  const { theme } = useTheme();
 
   const scrollToContacts = () => {
     const element = document.querySelector("#contacts");
@@ -37,13 +39,15 @@ export default function Hero() {
             backgroundImage: `url('/molodoi-master-stroit-dom.jpg')`,
           }}
         />
-        {/* Dark gradient overlay */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-background"
-        />
+        {/* Gradient overlay - только для темной темы */}
+        {theme === "dark" && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-background"
+          />
+        )}
         {/* Diagonal lines pattern */}
         <motion.div
           initial={{ opacity: 0 }}

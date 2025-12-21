@@ -168,7 +168,7 @@ export default function Services() {
 
                       {/* Number */}
                       <span className="absolute top-6 right-6 font-[var(--font-oswald)] text-7xl md:text-8xl font-bold text-white/[0.03] group-hover:text-[oklch(0.75_0.18_50)/10] transition-colors duration-500">
-                        {String((service.order_index || index) + 1).padStart(2, "0")}
+                        {String(service.order_index || (index + 1)).padStart(2, "0")}
                       </span>
 
                       <div className="relative z-10">

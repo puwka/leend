@@ -1,13 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Edit, X, Save } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 interface FAQItem {
   id: string;
@@ -19,8 +23,16 @@ interface FAQItem {
 export default function FAQ() {
   const [faqData, setFaqData] = useState<FAQItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [editingItem, setEditingItem] = useState<FAQItem | null>(null);
+  const [editForm, setEditForm] = useState({ question: "", answer: "" });
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
+    // Проверяем авторизацию
+    const authStatus = sessionStorage.getItem("admin_authenticated");
+    setIsAuthenticated(authStatus === "true");
+
     const fetchFAQ = async () => {
       try {
         const response = await fetch("/api/admin/faq");
@@ -37,6 +49,53 @@ export default function FAQ() {
 
     fetchFAQ();
   }, []);
+
+  const handleEdit = (item: FAQItem) => {
+    setEditingItem(item);
+    setEditForm({ question: item.question, answer: item.answer });
+  };
+
+  const handleSave = async () => {
+    if (!editingItem) return;
+
+    setIsSaving(true);
+    try {
+      const response = await fetch("/api/admin/faq", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editingItem.id,
+          question: editForm.question,
+          answer: editForm.answer,
+        }),
+      });
+
+      if (response.ok) {
+        // Обновляем локальное состояние
+        setFaqData((prev) =>
+          prev.map((item) =>
+            item.id === editingItem.id
+              ? { ...item, question: editForm.question, answer: editForm.answer }
+              : item
+          )
+        );
+        setEditingItem(null);
+        setEditForm({ question: "", answer: "" });
+      } else {
+        alert("Ошибка при сохранении");
+      }
+    } catch (error) {
+      console.error("Error saving FAQ:", error);
+      alert("Ошибка при сохранении");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditingItem(null);
+    setEditForm({ question: "", answer: "" });
+  };
 
   if (isLoading) {
     return (
@@ -112,9 +171,22 @@ export default function FAQ() {
                   <AccordionItem
                     key={item.id}
                     value={`item-${item.id}`}
-                    className="bg-background/50 border border-border rounded-2xl px-6 data-[state=open]:border-[oklch(0.75_0.18_50)/30] transition-colors duration-300"
+                    className="bg-background/50 border border-border rounded-2xl px-6 data-[state=open]:border-[oklch(0.75_0.18_50)/30] transition-colors duration-300 relative group"
                   >
-                    <AccordionTrigger className="text-left font-medium hover:text-[oklch(0.75_0.18_50)] transition-colors py-5 [&[data-state=open]]:text-[oklch(0.75_0.18_50)]">
+                    {isAuthenticated && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(item);
+                        }}
+                        className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[oklch(0.75_0.18_50)/10]"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                    )}
+                    <AccordionTrigger className="text-left font-medium hover:text-[oklch(0.75_0.18_50)] transition-colors py-5 [&[data-state=open]]:text-[oklch(0.75_0.18_50)] pr-10">
                       {item.question}
                     </AccordionTrigger>
                     <AccordionContent className="text-muted-foreground pb-5 leading-relaxed">
@@ -131,6 +203,88 @@ export default function FAQ() {
           </motion.div>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {editingItem && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+            onClick={handleCancel}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-card border border-border rounded-2xl p-8 max-w-2xl w-full mx-4"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="font-[var(--font-oswald)] text-2xl font-bold uppercase">
+                  Редактирование вопроса
+                </h2>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleCancel}
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Вопрос
+                  </label>
+                  <Input
+                    value={editForm.question}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, question: e.target.value })
+                    }
+                    className="bg-background border-border"
+                    placeholder="Введите вопрос"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Ответ
+                  </label>
+                  <Textarea
+                    value={editForm.answer}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, answer: e.target.value })
+                    }
+                    rows={6}
+                    className="bg-background border-border"
+                    placeholder="Введите ответ"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <Button
+                  onClick={handleSave}
+                  disabled={isSaving || !editForm.question || !editForm.answer}
+                  className="bg-[oklch(0.75_0.18_50)] hover:bg-[oklch(0.65_0.18_50)] text-black font-semibold flex-1"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {isSaving ? "Сохранение..." : "Сохранить"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleCancel}
+                  className="flex-1"
+                >
+                  Отмена
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
