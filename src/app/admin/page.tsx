@@ -197,6 +197,20 @@ export default function AdminPage() {
     }
   };
 
+  const fetchCurrentUsername = async () => {
+    try {
+      const response = await fetch("/api/admin/password");
+      if (response.ok) {
+        const data = await response.json();
+        if (data.username) {
+          setCurrentUsername(data.username);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching current username:", error);
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchPortfolio();
@@ -204,6 +218,7 @@ export default function AdminPage() {
       fetchDocuments();
       fetchFAQ();
       fetchServices();
+      fetchCurrentUsername();
     }
   }, [isAuthenticated]);
 
@@ -323,7 +338,6 @@ export default function AdminPage() {
         setNewUsername("");
         setCurrentPassword("");
         setUsernameError("");
-        fetchCurrentUsername();
       } else {
         setUsernameError(data.message || "Ошибка изменения логина");
       }
