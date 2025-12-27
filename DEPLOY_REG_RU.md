@@ -41,15 +41,44 @@ Reg.ru предоставляет VPS серверы, на которых мож
 # Обновление системы
 sudo apt update && sudo apt upgrade -y
 
-# Установка Node.js (версия 20.x)
+# Проверьте текущую версию Node.js (если установлена)
+node -v
+
+# Установка Node.js (версия 20.x) - ОБЯЗАТЕЛЬНО для Next.js 16
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt-get install -y nodejs
+
+# Проверьте версию после установки (должна быть 20.x)
+node -v
+npm -v
 
 # Установка PM2 для управления процессом
 sudo npm install -g pm2
 
 # Установка Nginx (опционально, для проксирования)
 sudo apt install nginx -y
+```
+
+**ВАЖНО:** Если у вас нет прав sudo (обычный хостинг reg.ru), используйте NVM:
+
+```bash
+# Установите NVM (Node Version Manager)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+
+# Перезагрузите профиль
+source ~/.bashrc
+# или
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+# Установите Node.js 20
+nvm install 20
+nvm use 20
+nvm alias default 20
+
+# Проверьте версию
+node -v
+npm -v
 ```
 
 #### Шаг 2: Загрузка проекта на сервер
@@ -301,15 +330,32 @@ pm2 delete leend
 
 ### Ошибки при сборке
 
-1. Убедитесь, что установлена правильная версия Node.js (20.x):
+1. **Ошибка: SyntaxError: Unexpected token ?**
+   
+   Это означает, что версия Node.js слишком старая. Next.js 16 требует Node.js 18.17+ или 20.x.
+   
+   **Решение:**
    ```bash
+   # Проверьте версию
    node -v
+   
+   # Если версия ниже 18.17, обновите (см. Шаг 1 выше)
+   # После обновления:
+   rm -rf node_modules package-lock.json .next
+   npm install --production
+   npm run build
    ```
 
-2. Очистите кэш и переустановите зависимости:
+2. Убедитесь, что установлена правильная версия Node.js (18.17+ или 20.x):
    ```bash
-   rm -rf node_modules .next
-   npm install
+   node -v
+   # Должна быть минимум 18.17.0 или 20.x.x
+   ```
+
+3. Очистите кэш и переустановите зависимости:
+   ```bash
+   rm -rf node_modules .next package-lock.json
+   npm install --production
    npm run build
    ```
 

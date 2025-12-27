@@ -146,18 +146,69 @@ pm2 logs leend
 
 ## Если проблемы продолжаются
 
-1. Проверьте права доступа:
+### Ошибка: SyntaxError: Unexpected token ?
+
+Эта ошибка означает, что версия Node.js слишком старая. Next.js 16 требует Node.js 18.17+ или 20.x.
+
+**Решение:**
+
+1. Проверьте текущую версию Node.js:
+```bash
+node -v
+```
+
+2. Если версия ниже 18.17, обновите Node.js:
+
+**Для reg.ru VPS:**
+```bash
+# Установите Node.js 20.x через NodeSource
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Проверьте версию
+node -v
+npm -v
+```
+
+**Для обычного хостинга reg.ru (без sudo):**
+Если у вас нет прав sudo, используйте NVM (Node Version Manager):
+```bash
+# 1. Установите NVM
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+
+# 2. Загрузите NVM вручную (если .bashrc отсутствует)
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+# 3. Создайте .bashrc если его нет
+if [ ! -f ~/.bashrc ]; then
+    echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc
+    echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> ~/.bashrc
+fi
+
+# 4. Установите Node.js 20
+nvm install 20
+nvm use 20
+nvm alias default 20
+
+# 5. Проверьте версию
+node -v
+```
+
+3. После обновления Node.js:
+```bash
+# Удалите старые node_modules и переустановите
+rm -rf node_modules package-lock.json
+npm install --production
+npm run build
+```
+
+4. Проверьте права доступа:
 ```bash
 chmod -R 755 /var/www/u3367936/data/leend
 ```
 
-2. Проверьте версию Node.js:
-```bash
-node -v
-# Должна быть 18.x или 20.x
-```
-
-3. Проверьте логи PM2:
+5. Проверьте логи PM2:
 ```bash
 pm2 logs leend --lines 50
 ```
